@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ShieldAI VPN</title>
+<style>
+:root{--p:#00d4ff;--s:#7c3aed;--ok:#10b981;--bad:#ef4444;--bg:#020617;--card:#111c31;--muted:#94a3b8;--text:#f1f5f9}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at 20% 0%,rgba(0,212,255,.11),transparent 32%),radial-gradient(circle at 90% 10%,rgba(124,58,237,.12),transparent 30%),var(--bg);color:var(--text);min-height:100vh}.wrap{max-width:760px;margin:auto;padding:22px}.top{display:flex;align-items:center;justify-content:space-between;margin:10px 0 24px}.brand{display:flex;gap:10px;align-items:center;font-weight:800;font-size:23px}.logo{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--p),var(--s))}.pill{font-size:12px;padding:8px 12px;border:1px solid #25334b;border-radius:999px;color:var(--muted)}.card{background:rgba(17,28,49,.92);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.28)}.center{text-align:center;padding:24px 0}.power{width:142px;height:142px;border:0;border-radius:50%;font-size:48px;color:white;background:linear-gradient(135deg,var(--p),var(--s));box-shadow:0 0 60px rgba(0,212,255,.3);transition:.25s}.power.connected{background:linear-gradient(135deg,var(--ok),#059669);box-shadow:0 0 65px rgba(16,185,129,.38)}.power:active{transform:scale(.97)}#status{font-weight:750;font-size:19px;margin-top:18px}.sub{color:var(--muted);font-size:13px;margin-top:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:15px;padding:15px}.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.value{font-size:24px;font-weight:800;margin-top:6px}.secure{display:flex;gap:10px;margin-top:14px;padding:13px;border-radius:13px;background:rgba(16,185,129,.06);color:var(--muted);font-size:13px}.secure strong{color:var(--ok)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.btn{padding:13px 15px;border-radius:12px;border:1px solid #2b3c59;background:#16243d;color:var(--text);font-weight:700}.btn.primary{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.09);color:var(--p)}.notice{margin-top:16px;padding:13px;border-radius:12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);font-size:13px;color:#fcd34d}.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:5}.modal.show{display:flex}.sheet{width:100%;max-height:92vh;overflow:auto;background:#0c1628;border-radius:24px 24px 0 0;padding:22px}.sheet h2{margin:0 0 8px}.sheet p{color:var(--muted);font-size:13px;line-height:1.5}.sheet textarea{width:100%;min-height:310px;background:#050b16;color:#dbeafe;border:1px solid #263955;border-radius:13px;padding:13px;font-family:ui-monospace,monospace;font-size:12px;resize:vertical}.sheet .row{display:flex;gap:10px;margin-top:12px}.sheet .row .btn{flex:1}.toast{position:fixed;left:18px;right:18px;bottom:18px;transform:translateY(140px);transition:.25s;padding:14px;border-radius:13px;background:#16243d;border:1px solid #31415b;font-size:13px;z-index:10}.toast.show{transform:translateY(0)}.footer{text-align:center;color:var(--muted);font-size:11px;padding:18px}@media(max-width:520px){.wrap{padding:16px}.grid{grid-template-columns:1fr 1fr}.power{width:126px;height:126px}.value{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand"><div class="logo">🛡️</div>ShieldAI</div><div class="pill" id="configBadge">No config</div></div>
+  <div class="card">
+    <div class="center">
+      <button id="power" class="power" onclick="toggleVPN()">⚡</button>
+      <div id="status">Disconnected</div>
+      <div class="sub" id="substatus">Real WireGuard tunnel</div>
+    </div>
+    <div class="grid">
+      <div class="stat"><div class="label">Received</div><div class="value" id="rx">0 B</div></div>
+      <div class="stat"><div class="label">Sent</div><div class="value" id="tx">0 B</div></div>
+    </div>
+    <div class="secure">🔒 <span><strong>WireGuard</strong> provides the tunnel cryptography. Transfer figures above come from the live WireGuard backend, not a simulation.</span></div>
+    <div class="actions">
+      <button class="btn primary" onclick="openSettings()">VPN Settings</button>
+      <button class="btn" onclick="refreshStats()">Refresh Stats</button>
+    </div>
+    <div class="notice" id="notice">First setup: paste a WireGuard client configuration in VPN Settings. Android will ask for VPN permission the first time you connect.</div>
+  </div>
+  <div class="footer">ShieldAI v0.1 • Android + WireGuard</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2>WireGuard Configuration</h2>
+    <p>Paste the client configuration produced by the included server installer. It contains a private key, so never post it publicly or commit it to GitHub.</p>
+    <textarea id="config" spellcheck="false" placeholder="[Interface]\nPrivateKey = ...\nAddress = 10.77.0.2/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = ...\nEndpoint = your-server:51820\nAllowedIPs = 0.0.0.0/0, ::/0"></textarea>
+    <div class="row"><button class="btn primary" onclick="saveConfig()">Save Config</button><button class="btn" onclick="closeSettings()">Close</button></div>
+    <div class="row"><button class="btn" onclick="clearConfig()">Clear Saved Config</button></div>
+  </div>
+</div>
+<div class="toast" id="toast">Message</div>
+
+<script>
+let connected=false;
+const native=()=>window.AndroidVPN;
+function toggleVPN(){ if(!native()){toast('Native VPN bridge unavailable. Install the Android APK.');return;} connected?native().disconnect():native().connect(); document.getElementById('substatus').textContent=connected?'Disconnecting…':'Connecting…'; }
+function openSettings(){document.getElementById('modal').classList.add('show')}
+function closeSettings(){document.getElementById('modal').classList.remove('show')}
+function saveConfig(){const v=document.getElementById('config').value;if(!v.trim()){toast('Paste a WireGuard config first.');return;}native().saveConfig(v)}
+function clearConfig(){native().clearConfig();document.getElementById('config').value=''}
+function fmt(n){n=Number(n)||0;const u=['B','KB','MB','GB','TB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return (i? n.toFixed(n>=10?1:2):Math.round(n))+' '+u[i]}
+function refreshStats(){if(!native())return;try{const s=JSON.parse(native().getStats());connected=s.state==='connected';paint();document.getElementById('rx').textContent=fmt(s.rxBytes);document.getElementById('tx').textContent=fmt(s.txBytes)}catch(e){}}
+function paint(){const p=document.getElementById('power'),s=document.getElementById('status'),sub=document.getElementById('substatus');p.classList.toggle('connected',connected);s.textContent=connected?'Connected':'Disconnected';s.style.color=connected?'var(--ok)':'var(--text)';sub.textContent=connected?'Traffic is being routed through WireGuard':'Real WireGuard tunnel'}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3200)}
+window.ShieldAI={onNativeState(state){connected=state==='connected';paint();refreshStats();toast(connected?'VPN connected':'VPN disconnected')},onNativeError(msg){document.getElementById('substatus').textContent='Error';toast(msg)},onConfigSaved(){document.getElementById('configBadge').textContent='Config saved';document.getElementById('configBadge').style.color='var(--ok)';closeSettings();toast('WireGuard config saved locally')},onConfigCleared(){document.getElementById('configBadge').textContent='No config';toast('Saved config cleared')}};
+window.addEventListener('load',()=>{if(native()){try{if(native().hasConfig()){document.getElementById('configBadge').textContent='Config saved';document.getElementById('configBadge').style.color='var(--ok)'}}catch(e){} refreshStats();setInterval(refreshStats,2000)}else{document.getElementById('notice').textContent='This browser preview cannot create a VPN. Install the Android APK to use the native WireGuard engine.'}});
+</script>
+</body>
+</html>
